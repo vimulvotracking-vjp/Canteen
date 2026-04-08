@@ -1,0 +1,257 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>VIMUL Smart Canteen</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+text-align:center;
+margin:0;
+padding:10px;
+}
+
+.container{
+max-width:420px;
+margin:auto;
+}
+
+.logo{
+width:110px;
+margin-top:10px;
+}
+
+.box{
+background:white;
+color:black;
+padding:20px;
+border-radius:15px;
+margin-top:10px;
+}
+
+input{
+width:90%;
+padding:10px;
+font-size:16px;
+margin-top:8px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+.qty{
+width:70px;
+text-align:center;
+}
+
+button{
+width:100%;
+padding:14px;
+margin-top:12px;
+border:none;
+border-radius:10px;
+font-size:18px;
+background:#28a745;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#1e7e34;
+}
+
+.token{
+font-size:26px;
+color:red;
+margin-top:20px;
+font-weight:bold;
+}
+
+.welcome{
+font-size:18px;
+margin-bottom:10px;
+}
+
+.footer{
+margin-top:30px;
+font-size:13px;
+opacity:0.8;
+}
+
+#orderPage{
+display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<img src="logo.png" class="logo">
+
+<h2>VIMUL Smart Canteen</h2>
+
+<!-- LOGIN PAGE -->
+
+<div class="box" id="loginPage">
+
+<h3>Employee Login</h3>
+
+<input type="text" id="empid" placeholder="Employee ID">
+
+<input type="password" id="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+</div>
+
+
+<!-- ORDER PAGE -->
+
+<div class="box" id="orderPage">
+
+<div class="welcome" id="welcome"></div>
+
+<h3>Order Menu</h3>
+
+<label>Employee Meal ₹30</label><br>
+<input class="qty" type="number" id="meal" value="0" min="0"><br><br>
+
+<label>Tea ₹5</label><br>
+<input class="qty" type="number" id="tea" value="0" min="0"><br><br>
+
+<label>Other Meal ₹35</label><br>
+<input class="qty" type="number" id="other" value="0" min="0"><br><br>
+
+<button onclick="placeOrder()">Place Order</button>
+
+<div class="token" id="token"></div>
+
+</div>
+
+<div class="footer">
+Created by Kishor N
+</div>
+
+</div>
+
+<script>
+
+var empID="";
+var empName="";
+var token="";
+var totalAmount=0;
+
+const scriptURL="https://script.google.com/macros/s/AKfycbx19WFkqCG7RP50F3Khb-g1Y5Xww896p7ICyeTLXL2iAjLZ7IYWFS2-dsby7xfnZuqpAA/exec";
+
+/* LOGIN FUNCTION */
+
+function login(){
+
+var id=document.getElementById("empid").value;
+var password=document.getElementById("password").value;
+
+if(id=="" || password==""){
+alert("Enter Employee ID and Password");
+return;
+}
+
+fetch(scriptURL,{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+action:"login",
+id:id,
+password:password
+
+})
+
+})
+
+.then(res=>res.json())
+
+.then(data=>{
+
+if(data.status=="success"){
+
+empID=id;
+empName=data.name;
+
+document.getElementById("loginPage").style.display="none";
+document.getElementById("orderPage").style.display="block";
+
+document.getElementById("welcome").innerHTML="Welcome "+empName;
+
+}else{
+
+alert("Invalid Employee ID or Password");
+
+}
+
+});
+
+}
+
+
+/* PLACE ORDER */
+
+function placeOrder(){
+
+var meal = Number(document.getElementById("meal").value);
+var tea = Number(document.getElementById("tea").value);
+var other = Number(document.getElementById("other").value);
+
+totalAmount = meal*30 + tea*5 + other*35;
+
+if(totalAmount==0){
+alert("Please select item");
+return;
+}
+
+token="T"+Date.now().toString().slice(-4);
+
+document.getElementById("token").innerHTML=
+"Token : "+token+"<br>Total ₹"+totalAmount;
+
+fetch(scriptURL,{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+action:"order",
+id:empID,
+name:empName,
+meal:meal,
+tea:tea,
+other:other,
+total:totalAmount,
+token:token
+
+})
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
