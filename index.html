@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>VIMUL Smart Canteen</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+text-align:center;
+margin:0;
+padding:10px;
+}
+
+.container{
+max-width:420px;
+margin:auto;
+}
+
+.logo{
+width:120px;
+margin-top:10px;
+}
+
+.box{
+background:white;
+color:black;
+padding:20px;
+border-radius:15px;
+margin-top:10px;
+}
+
+input{
+width:70px;
+padding:6px;
+font-size:16px;
+text-align:center;
+}
+
+button{
+width:100%;
+padding:14px;
+margin-top:12px;
+border:none;
+border-radius:10px;
+font-size:18px;
+background:#28a745;
+color:white;
+}
+
+button:hover{
+background:#1e7e34;
+}
+
+.paybtn{
+background:#ff7a00;
+}
+
+.token{
+font-size:26px;
+color:red;
+margin-top:20px;
+font-weight:bold;
+}
+
+.footer{
+margin-top:30px;
+font-size:13px;
+opacity:0.8;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<img src="logo.png" class="logo">
+
+<h2>VIMUL Smart Canteen</h2>
+
+<div class="box">
+
+<h3>Order Menu</h3>
+
+<label>Employee Meal ₹30</label><br>
+<input type="number" id="meal" value="0" min="0"><br><br>
+
+<label>Tea ₹5</label><br>
+<input type="number" id="tea" value="0" min="0"><br><br>
+
+<label>Other Meal ₹35</label><br>
+<input type="number" id="other" value="0" min="0"><br><br>
+
+<button onclick="placeOrder()">Place Order</button>
+
+<div class="token" id="token"></div>
+
+<button id="paybtn" class="paybtn" style="display:none" onclick="payUPI()">
+Pay Now
+</button>
+
+</div>
+
+<div class="footer">
+Created by Kishor N
+</div>
+
+</div>
+
+<script>
+
+var totalAmount=0;
+var token="";
+
+function placeOrder(){
+
+var meal = Number(document.getElementById("meal").value);
+var tea = Number(document.getElementById("tea").value);
+var other = Number(document.getElementById("other").value);
+
+totalAmount = meal*30 + tea*5 + other*35;
+
+if(totalAmount<=0){
+alert("Please select at least one item");
+return;
+}
+
+/* TOKEN */
+
+token = "T"+Date.now().toString().slice(-4);
+
+document.getElementById("token").innerHTML =
+"Token : "+token+"<br>Total ₹"+totalAmount+"<br><small>Click Pay Now to complete payment</small>";
+
+document.getElementById("paybtn").style.display="block";
+
+/* SAVE ORDER */
+
+fetch("https://script.google.com/macros/s/AKfycbyiVlNRTHJDEvfSSdzJbYbxUBmk0rlyHLAi1ouUMcROWlps--lbEVk01HPXyaaK8QiSxw/exec",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+token:token,
+meal:meal,
+tea:tea,
+other:other,
+total:totalAmount
+
+})
+
+});
+
+}
+
+/* UPI PAYMENT */
+
+function payUPI(){
+
+var upiID="9844927264@ybl";
+
+var note="Token "+token;
+
+var upiLink="upi://pay?pa="+encodeURIComponent(upiID)
++"&pn="+encodeURIComponent("VIMUL Canteen")
++"&am="+totalAmount
++"&cu=INR"
++"&tn="+encodeURIComponent(note);
+
+/* OPEN UPI APP */
+
+window.location.href=upiLink;
+
+}
+
+</script>
+
+</body>
+</html>
